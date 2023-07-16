@@ -23,10 +23,10 @@ func main() {
 	}
 
 	if inputPath == "" || inputName == "" {
-		log.Printf("Please provide input")
+		log.Printf("Please provide input in main.go")
 		return
 	}
-
+	// remove image background
 	rembgOutput, err := rembg.RemoveBackground(srvc.FileLocation{
 		Path: inputPath,
 		Name: inputName,
@@ -35,7 +35,7 @@ func main() {
 		log.Printf("rembg err: %s", err)
 		return
 	}
-
+	// convert backgroundless image to mask
 	maskOutput, err := ffmpeg.ConvertToMask(srvc.FileLocation{
 		Path: rembgOutput.Path,
 		Name: rembgOutput.Name,
@@ -44,7 +44,7 @@ func main() {
 		log.Printf("maskoutput err: %s", err)
 		return
 	}
-
+	// add white background to backgroundless image
 	whitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
 		Path: rembgOutput.Path,
 		Name: rembgOutput.Name,
@@ -53,7 +53,7 @@ func main() {
 		log.Printf("whitebg err: %s", err)
 		return
 	}
-
+	// add white background to mask image
 	maskwhitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
 		Path: maskOutput.Path,
 		Name: maskOutput.Name,
