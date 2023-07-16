@@ -27,3 +27,4 @@ service/rembg/output/*
 
 *.DS_STORE
 .env
+.idea/
