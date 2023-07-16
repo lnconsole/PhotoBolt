@@ -20,6 +20,10 @@
 # Go workspace file
 go.work
 
-output*
+service/ffmpeg/output/*
+!service/ffmpeg/output/.keep
+service/rembg/output/*
+!service/rembg/output/.keep
+
 *.DS_STORE
 .env
