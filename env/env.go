@@ -6,9 +6,10 @@ import (
 )
 
 type photoBolt struct {
-	RepoDirectory  string `envconfig:"REPO_DIR"`
-	RembgFullPath  string `envconfig:"REMBG_FULL_PATH"`
-	FfmpegFullPath string `envconfig:"FFMPEG_FULL_PATH"`
+	RepoDirectory    string `envconfig:"REPO_DIR"`
+	RembgFullPath    string `envconfig:"REMBG_FULL_PATH"`
+	FfmpegFullPath   string `envconfig:"FFMPEG_FULL_PATH"`
+	Automatic1111URL string `envconfig:"AUTOMATIC1111_URL"`
 }
 
 var (
