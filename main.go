@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	inputPath = "/Users/ChongjinChua/Downloads" // /path/to/your/file/directory
-	inputName = "bottle-keras.png"              // name.png
+	inputPath = "" // /Users/ChongjinChua/Downloads
+	inputName = "" // bottle-keras.png
 )
 
 func main() {
@@ -62,10 +62,26 @@ func main() {
 		log.Printf("maskwhitebg err: %s", err)
 		return
 	}
+	// overlay logo on white background image
+	overlay, err := ffmpeg.OverlayImages(
+		srvc.FileLocation{
+			Path: inputPath,
+			Name: "beatzcoin.png",
+		},
+		srvc.FileLocation{
+			Path: whitebg.Path,
+			Name: whitebg.Name,
+		},
+	)
+	if err != nil {
+		log.Printf("overlay err: %s", err)
+		return
+	}
 
 	log.Printf(
-		"Ready for automatic1111\nPic with white background: %s/%s\nMask with white background: %s/%s\n",
+		"Ready for automatic1111\nPic with white background: %s/%s\nMask with white background: %s/%s\nOverlay: %s/%s\n",
 		whitebg.Path, whitebg.Name,
 		maskwhitebg.Path, maskwhitebg.Name,
+		overlay.Path, overlay.Name,
 	)
 }

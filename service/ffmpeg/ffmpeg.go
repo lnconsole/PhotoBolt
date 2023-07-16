@@ -58,6 +58,32 @@ func InsertWhiteBackground(input srvc.FileLocation) (srvc.FileLocation, error) {
 	}, nil
 }
 
+func OverlayImages(front srvc.FileLocation, back srvc.FileLocation) (srvc.FileLocation, error) {
+	var (
+		outputPath = outputPath()
+		outputFile = fmt.Sprintf("combined-%s", back.Name)
+	)
+	_, err := exec.Command(
+		env.PhotoBolt.FfmpegFullPath,
+		"-i",
+		fmt.Sprintf("%s/%s", back.Path, back.Name),
+		"-i",
+		fmt.Sprintf("%s/%s", front.Path, front.Name),
+		"-filter_complex",
+		"[0:v][1:v] overlay=0:0",
+		"-y",
+		fmt.Sprintf("%s/%s", outputPath, outputFile),
+	).Output()
+	if err != nil {
+		return srvc.FileLocation{}, err
+	}
+
+	return srvc.FileLocation{
+		Path: outputPath,
+		Name: outputFile,
+	}, nil
+}
+
 func outputPath() string {
 	return fmt.Sprintf("%s/service/ffmpeg/output", env.PhotoBolt.RepoDirectory)
 }
