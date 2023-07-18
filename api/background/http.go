@@ -2,19 +2,24 @@ package background
 
 import (
 	"fmt"
+
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/lnconsole/photobolt/env"
 	srvc "github.com/lnconsole/photobolt/service"
+	"github.com/lnconsole/photobolt/service/automatic1111"
 	"github.com/lnconsole/photobolt/service/ffmpeg"
 	"github.com/lnconsole/photobolt/service/rembg"
+	"github.com/lnconsole/photobolt/shared"
 )
 
-func Replace(c *gin.Context) {
+func Replace(automatic1111Url string) gin.HandlerFunc {
 	/*
 		remove bg
 		add white bg
@@ -22,75 +27,127 @@ func Replace(c *gin.Context) {
 		call img2img
 		return img
 	*/
-	var payload ReplaceBackgroundBody
+	return func(c *gin.Context) {
+		var payload ReplaceBackgroundBody
 
-	if err := c.ShouldBind(&payload); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"status": "ERROR",
-			"reason": err.Error(),
+		if err := c.ShouldBind(&payload); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+				"status": "ERROR",
+				"reason": err.Error(),
+			})
+			return
+		}
+
+		var (
+			file = payload.File
+			// Retrieve file information
+			extension = filepath.Ext(file.Filename)
+			// Generate random file name for the new uploaded file so it doesn't override the old file with same name
+			newFileName = uuid.New().String() + extension
+			inputPath   = fmt.Sprintf("%s/%s", env.PhotoBolt.RepoDirectory, "api/background")
+			inputName   = newFileName
+		)
+		if err := c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", inputPath, inputName)); err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("Unable to save the file: %v", err),
+			})
+			return
+		}
+
+		// remove image background
+		rembgOutput, err := rembg.RemoveBackground(srvc.FileLocation{
+			Path: inputPath,
+			Name: inputName,
 		})
-		return
-	}
-
-	var (
-		file = payload.File
-		// Retrieve file information
-		extension = filepath.Ext(file.Filename)
-		// Generate random file name for the new uploaded file so it doesn't override the old file with same name
-		newFileName = uuid.New().String() + extension
-		inputPath   = fmt.Sprintf("%s/%s", env.PhotoBolt.RepoDirectory, "api/background")
-		inputName   = newFileName
-	)
-	if err := c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", inputPath, inputName)); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to save the file",
+		if err != nil {
+			log.Printf("rembg err: %s", err)
+			return
+		}
+		// convert backgroundless image to mask
+		maskOutput, err := ffmpeg.ConvertToMask(srvc.FileLocation{
+			Path: rembgOutput.Path,
+			Name: rembgOutput.Name,
 		})
-		return
+		if err != nil {
+			log.Printf("maskoutput err: %s", err)
+			return
+		}
+		// add white background to backgroundless image
+		whitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
+			Path: rembgOutput.Path,
+			Name: rembgOutput.Name,
+		})
+		if err != nil {
+			log.Printf("whitebg err: %s", err)
+			return
+		}
+		// add white background to mask image
+		maskwhitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
+			Path: maskOutput.Path,
+			Name: maskOutput.Name,
+		})
+		if err != nil {
+			log.Printf("maskwhitebg err: %s", err)
+			return
+		}
+		log.Printf(
+			"Ready for automatic1111\nPic with white background: %s/%s\nMask with white background: %s/%s\n",
+			whitebg.Path, whitebg.Name,
+			maskwhitebg.Path, maskwhitebg.Name,
+			// overlay.Path, overlay.Name,
+		)
+
+		whiteBgFileBytes, err := os.ReadFile(fmt.Sprintf("%s/%s", whitebg.Path, whitebg.Name))
+		if err != nil {
+			log.Printf("error opening whitebg file: %v", err)
+			return
+		}
+
+		maskFileBytes, err := os.ReadFile(fmt.Sprintf("%s/%s", maskwhitebg.Path, maskwhitebg.Name))
+		if err != nil {
+			log.Printf("error opening mask file: %v", err)
+			return
+		}
+
+		whiteBgFileBase64, err := shared.EncodeImageToBase64(whiteBgFileBytes)
+		if err != nil {
+			log.Printf("error base64 encoding whitebg bytes: %v", err)
+			return
+		}
+
+		maskFileBase64, err := shared.EncodeImageToBase64(maskFileBytes)
+		if err != nil {
+			log.Printf("error base64 encoding mask bytes: %v", err)
+			return
+		}
+
+		imageOutput, err := automatic1111.Img2Img(
+			automatic1111Url,
+			&automatic1111.Img2ImgInput{
+				InitImages:        []string{whiteBgFileBase64},
+				Mask:              maskFileBase64,
+				Prompt:            payload.Prompt,
+				NegativePrompt:    "",
+				Styles:            []string{},
+				Steps:             20,
+				Seed:              3860127608,
+				CFGScale:          7,
+				SamplerName:       automatic1111.SamplerDPMPP2MKarras,
+				ResizeMode:        1,
+				DenoisingStrength: 0.75,
+			},
+		)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("%v", err),
+			})
+		}
+
+		c.JSON(http.StatusOK, &ReplaceBackgroundResponse{
+			Image: imageOutput.Images,
+		})
 	}
 
-	// remove image background
-	rembgOutput, err := rembg.RemoveBackground(srvc.FileLocation{
-		Path: inputPath,
-		Name: inputName,
-	})
-	if err != nil {
-		log.Printf("rembg err: %s", err)
-		return
-	}
-	// convert backgroundless image to mask
-	maskOutput, err := ffmpeg.ConvertToMask(srvc.FileLocation{
-		Path: rembgOutput.Path,
-		Name: rembgOutput.Name,
-	})
-	if err != nil {
-		log.Printf("maskoutput err: %s", err)
-		return
-	}
-	// add white background to backgroundless image
-	whitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
-		Path: rembgOutput.Path,
-		Name: rembgOutput.Name,
-	})
-	if err != nil {
-		log.Printf("whitebg err: %s", err)
-		return
-	}
-	// add white background to mask image
-	maskwhitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
-		Path: maskOutput.Path,
-		Name: maskOutput.Name,
-	})
-	if err != nil {
-		log.Printf("maskwhitebg err: %s", err)
-		return
-	}
-	log.Printf(
-		"Ready for automatic1111\nPic with white background: %s/%s\nMask with white background: %s/%s\n",
-		whitebg.Path, whitebg.Name,
-		maskwhitebg.Path, maskwhitebg.Name,
-		// overlay.Path, overlay.Name,
-	)
-	c.Status(http.StatusOK)
 }
 
 // overlay logo on white background image

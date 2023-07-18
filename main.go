@@ -26,7 +26,7 @@ func main() {
 func setupRoutes(engine *gin.Engine) {
 	api := engine.Group("/api")
 	// BACKGROUND
-	api.POST("/background", background.Replace)
+	api.POST("/background", background.Replace(env.PhotoBolt.Automatic1111URL))
 	// ICON
 	api.POST("/icon", icon.Generate)
 	// OVERLAY
