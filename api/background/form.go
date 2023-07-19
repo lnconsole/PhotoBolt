@@ -8,5 +8,5 @@ type ReplaceBackgroundBody struct {
 }
 
 type ReplaceBackgroundResponse struct {
-	Image []string
+	Image []string `json:"image"`
 }

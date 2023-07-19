@@ -121,21 +121,29 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			return
 		}
 
+		// all img2img input preparation
+		img2imgInput := automatic1111.NewImg2ImgInput()
+		img2imgInput.Seed = 3253919966
+		img2imgInput.Prompt = payload.Prompt
+		img2imgInput.SamplerName = automatic1111.SamplerDPMPP2MKarras
+		img2imgInput.InitImages = []string{whiteBgFileBase64}
+		img2imgInput.Mask = maskFileBase64
+		img2imgInput.InpaintFullResPadding = 40
+		img2imgInput.MaskBlur = 0
+		img2imgInput.DenoisingStrength = 1.0
+		img2imgInput.CFGScale = 6.0
+
+		cannyCNUnit := automatic1111.NewControlNetUnit()
+		cannyCNUnit.InputImage = whiteBgFileBase64
+		cannyCNUnit.Weight = 0.6
+		cannyCNUnit.ProcessorRes = 512
+		cannyCNUnit.ThresholdA = 100
+		cannyCNUnit.ThresholdB = 200
+		img2imgInput.AddControlNetUnit(cannyCNUnit)
+
 		imageOutput, err := automatic1111.Img2Img(
 			automatic1111Url,
-			&automatic1111.Img2ImgInput{
-				InitImages:        []string{whiteBgFileBase64},
-				Mask:              maskFileBase64,
-				Prompt:            payload.Prompt,
-				NegativePrompt:    "",
-				Styles:            []string{},
-				Steps:             20,
-				Seed:              3860127608,
-				CFGScale:          7,
-				SamplerName:       automatic1111.SamplerDPMPP2MKarras,
-				ResizeMode:        1,
-				DenoisingStrength: 0.75,
-			},
+			img2imgInput,
 		)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
