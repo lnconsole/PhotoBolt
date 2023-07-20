@@ -2,6 +2,7 @@ package automatic1111
 
 import (
 	"fmt"
+
 	"github.com/lnconsole/photobolt/http"
 )
 

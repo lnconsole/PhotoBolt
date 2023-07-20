@@ -43,26 +43,31 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			// Retrieve file information
 			extension = filepath.Ext(file.Filename)
 			// Generate random file name for the new uploaded file so it doesn't override the old file with same name
-			newFileName = uuid.New().String() + extension
-			inputPath   = fmt.Sprintf("%s/%s", env.PhotoBolt.RepoDirectory, "api/background")
-			inputName   = newFileName
+			newFileName       = uuid.New().String() + extension
+			inputFilelocation = srvc.FileLocation{
+				Path: fmt.Sprintf("%s/%s", env.PhotoBolt.RepoDirectory, "api/background"),
+				Name: newFileName,
+			}
 		)
-		if err := c.SaveUploadedFile(file, fmt.Sprintf("%s/%s", inputPath, inputName)); err != nil {
+		if err := c.SaveUploadedFile(file, inputFilelocation.FullPath()); err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": fmt.Sprintf("Unable to save the file: %v", err),
 			})
 			return
 		}
+		defer func() { inputFilelocation.Remove() }()
 
 		// remove image background
 		rembgOutput, err := rembg.RemoveBackground(srvc.FileLocation{
-			Path: inputPath,
-			Name: inputName,
+			Path: inputFilelocation.Path,
+			Name: inputFilelocation.Name,
 		})
 		if err != nil {
 			log.Printf("rembg err: %s", err)
 			return
 		}
+		defer func() { rembgOutput.Remove() }()
+
 		// convert backgroundless image to mask
 		maskOutput, err := ffmpeg.ConvertToMask(srvc.FileLocation{
 			Path: rembgOutput.Path,
@@ -72,6 +77,8 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			log.Printf("maskoutput err: %s", err)
 			return
 		}
+		defer func() { maskOutput.Remove() }()
+
 		// add white background to backgroundless image
 		whitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
 			Path: rembgOutput.Path,
@@ -81,6 +88,8 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			log.Printf("whitebg err: %s", err)
 			return
 		}
+		defer func() { whitebg.Remove() }()
+
 		// add white background to mask image
 		maskwhitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
 			Path: maskOutput.Path,
@@ -90,20 +99,21 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			log.Printf("maskwhitebg err: %s", err)
 			return
 		}
+		defer func() { maskwhitebg.Remove() }()
+
 		log.Printf(
-			"Ready for automatic1111\nPic with white background: %s/%s\nMask with white background: %s/%s\n",
-			whitebg.Path, whitebg.Name,
-			maskwhitebg.Path, maskwhitebg.Name,
-			// overlay.Path, overlay.Name,
+			"Ready for automatic1111\nPic with white background: %s\nMask with white background: %s\n",
+			whitebg.FullPath(),
+			maskwhitebg.FullPath(),
 		)
 
-		whiteBgFileBytes, err := os.ReadFile(fmt.Sprintf("%s/%s", whitebg.Path, whitebg.Name))
+		whiteBgFileBytes, err := os.ReadFile(whitebg.FullPath())
 		if err != nil {
 			log.Printf("error opening whitebg file: %v", err)
 			return
 		}
 
-		maskFileBytes, err := os.ReadFile(fmt.Sprintf("%s/%s", maskwhitebg.Path, maskwhitebg.Name))
+		maskFileBytes, err := os.ReadFile(maskwhitebg.FullPath())
 		if err != nil {
 			log.Printf("error opening mask file: %v", err)
 			return
@@ -123,7 +133,7 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 
 		// all img2img input preparation
 		img2imgInput := automatic1111.NewImg2ImgInput()
-		img2imgInput.Seed = 3253919966
+		img2imgInput.Seed = -1 // 3253919966
 		img2imgInput.Prompt = payload.Prompt
 		img2imgInput.SamplerName = automatic1111.SamplerDPMPP2MKarras
 		img2imgInput.InitImages = []string{whiteBgFileBase64}
@@ -149,13 +159,13 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"error": fmt.Sprintf("%v", err),
 			})
+			return
 		}
 
 		c.JSON(http.StatusOK, &ReplaceBackgroundResponse{
 			Image: imageOutput.Images,
 		})
 	}
-
 }
 
 // overlay logo on white background image
