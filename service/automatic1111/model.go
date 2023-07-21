@@ -25,6 +25,8 @@ const (
 	ControlNetModeBalanced                  = 0
 	ControlNetModeMyPromptIsMoreImportant   = 1
 	ControlNetModeControlNetIsMoreImportant = 2
+
+	SDModelPhotonV1 = "photon_v1"
 )
 
 type ImgOutput struct {
