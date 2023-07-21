@@ -30,14 +30,16 @@ func Post(url string, body interface{}, response interface{}) error {
 		return err
 	}
 
-	defer func() {
-		if err := httpResponse.Body.Close(); err != nil {
-			log.Print(err)
-		}
-	}()
+	if response != nil {
+		defer func() {
+			if err := httpResponse.Body.Close(); err != nil {
+				log.Print(err)
+			}
+		}()
 
-	if err := json.NewDecoder(httpResponse.Body).Decode(response); err != nil {
-		return err
+		if err := json.NewDecoder(httpResponse.Body).Decode(response); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -77,6 +79,41 @@ func PostBytes(url string, b bytes.Buffer, contentType string, response interfac
 
 	if err := json.NewDecoder(httpResponse.Body).Decode(response); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func Get(url string, response interface{}) error {
+	request, err := http.NewRequest(
+		http.MethodGet,
+		url,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	httpResponse, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if httpResponse.StatusCode < 200 || httpResponse.StatusCode > 299 {
+		return fmt.Errorf("http response code: %d", httpResponse.StatusCode)
+	}
+
+	if response != nil {
+		if err := json.NewDecoder(httpResponse.Body).Decode(response); err != nil {
+			return err
+		}
+
+		defer func() {
+			if err := httpResponse.Body.Close(); err != nil {
+				log.Print(err)
+			}
+		}()
 	}
 
 	return nil
