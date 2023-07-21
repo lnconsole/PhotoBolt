@@ -26,7 +26,8 @@ const (
 	ControlNetModeMyPromptIsMoreImportant   = 1
 	ControlNetModeControlNetIsMoreImportant = 2
 
-	SDModelPhotonV1 = "photon_v1"
+	SDModelPhotonV1      = "photon_v1"
+	SDModelDreamShaperV7 = "dreamshaper_7"
 )
 
 type ImgOutput struct {
