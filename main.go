@@ -13,7 +13,7 @@ import (
 func main() {
 	log.Printf("winning")
 
-	if err := env.Init(); err != nil {
+	if err := env.Init("env/.env"); err != nil {
 		log.Printf("env err: %s", err)
 		return
 	}
@@ -28,7 +28,7 @@ func setupRoutes(engine *gin.Engine) {
 	// BACKGROUND
 	api.POST("/background", background.Replace(env.PhotoBolt.Automatic1111URL))
 	// ICON
-	api.POST("/icon", icon.Generate)
+	api.POST("/icon", icon.Generate(env.PhotoBolt.Automatic1111URL))
 	// OVERLAY
-	api.POST("/overlay", overlay.Combine)
+	api.POST("/overlay", overlay.Combine())
 }

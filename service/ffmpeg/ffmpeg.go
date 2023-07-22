@@ -70,7 +70,7 @@ func OverlayImages(front srvc.FileLocation, back srvc.FileLocation) (srvc.FileLo
 		"-i",
 		fmt.Sprintf("%s/%s", front.Path, front.Name),
 		"-filter_complex",
-		"[0:v][1:v] overlay=0:0",
+		"[1:v]scale=256:256 [ov]; [0:v][ov]overlay",
 		"-y",
 		fmt.Sprintf("%s/%s", outputPath, outputFile),
 	).Output()

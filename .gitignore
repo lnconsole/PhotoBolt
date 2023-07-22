@@ -29,4 +29,6 @@ service/rembg/output/*
 .env
 .idea/
 
-output.png
+combined.png
+icon.png
+replaced-bg.png

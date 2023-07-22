@@ -32,10 +32,14 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 
 		if err := c.ShouldBind(&payload); err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"status": "ERROR",
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
+		}
+		if payload.File == nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Empty file received",
+			})
 		}
 
 		var (
@@ -132,8 +136,7 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 		}
 
 		// all img2img input preparation
-		img2imgInput := automatic1111.NewImg2ImgInput()
-		img2imgInput.Seed = -1 // 3253919966
+		img2imgInput := automatic1111.NewImg2ImgInpaintUploadInput()
 		img2imgInput.Prompt = payload.Prompt
 		img2imgInput.SamplerName = automatic1111.SamplerDPMPP2MKarras
 		img2imgInput.InitImages = []string{whiteBgFileBase64}
@@ -151,7 +154,7 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 		cannyCNUnit.ThresholdB = 200
 		img2imgInput.AddControlNetUnit(cannyCNUnit)
 
-		imageOutput, err := automatic1111.Img2Img(
+		imageOutput, err := automatic1111.Img2ImgInpaintUpload(
 			automatic1111Url,
 			img2imgInput,
 		)

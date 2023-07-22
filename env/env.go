@@ -13,11 +13,10 @@ type photoBolt struct {
 }
 
 var (
-	path      = "env/.env"
 	PhotoBolt = photoBolt{}
 )
 
-func Init() error {
+func Init(path string) error {
 	if err := godotenv.Load(path); err != nil {
 		return err
 	}

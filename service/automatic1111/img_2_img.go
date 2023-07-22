@@ -7,22 +7,26 @@ import (
 )
 
 type Img2ImgInput struct {
-	InitImages            []string               `json:"init_images"`
+	InitImages        []string `json:"init_images"`
+	Prompt            string   `json:"prompt"`
+	NegativePrompt    string   `json:"negative_prompt"`
+	BatchSize         int      `json:"batch_size"`
+	Steps             int      `json:"steps"`
+	Seed              int      `json:"seed"`
+	CFGScale          float64  `json:"cfg_scale"`
+	SamplerName       Sampler  `json:"sampler_name"`
+	ResizeMode        int      `json:"resize_mode"`
+	Width             int      `json:"width"`
+	Height            int      `json:"height"`
+	DenoisingStrength float64  `json:"denoising_strength"`
+}
+
+type Img2ImgInpaintUploadInput struct {
+	Img2ImgInput
 	Mask                  string                 `json:"mask"`
 	MaskBlur              int                    `json:"mask_blur"`
-	Prompt                string                 `json:"prompt"`
-	NegativePrompt        string                 `json:"negative_prompt"`
 	Styles                []string               `json:"styles"`
-	BatchSize             int                    `json:"batch_size"`
-	Steps                 int                    `json:"steps"`
-	Seed                  int                    `json:"seed"`
-	CFGScale              float64                `json:"cfg_scale"`
 	ImageCFGScale         float64                `json:"image_cfg_scale"`
-	SamplerName           Sampler                `json:"sampler_name"`
-	ResizeMode            int                    `json:"resize_mode"`
-	Width                 int                    `json:"width"`
-	Height                int                    `json:"height"`
-	DenoisingStrength     float64                `json:"denoising_strength"`
 	InpaintingFill        int                    `json:"inpainting_fill"`
 	InpaintFullRes        int                    `json:"inpaint_full_res"`
 	InpaintFullResPadding int                    `json:"inpaint_full_res_padding"`
@@ -54,22 +58,29 @@ type ControlNetUnit struct {
 // NewImg2ImgInput builds a new Img2Img input with default automatic1111 values
 func NewImg2ImgInput() *Img2ImgInput {
 	return &Img2ImgInput{
-		InitImages:            []string{},
+		InitImages:        []string{},
+		Prompt:            "",
+		NegativePrompt:    "",
+		BatchSize:         1,
+		Steps:             20,
+		Seed:              -1,
+		CFGScale:          7,
+		SamplerName:       SamplerEuler,
+		ResizeMode:        ResizeModeJustResize,
+		Width:             512,
+		Height:            512,
+		DenoisingStrength: 0.75,
+	}
+}
+
+// NewImg2ImgInpaintUploadInput builds a new Img2Img inpaint upload input with default automatic1111 values
+func NewImg2ImgInpaintUploadInput() *Img2ImgInpaintUploadInput {
+	return &Img2ImgInpaintUploadInput{
+		Img2ImgInput:          *NewImg2ImgInput(),
 		Mask:                  "",
 		MaskBlur:              4,
-		Prompt:                "",
-		NegativePrompt:        "",
 		Styles:                []string{},
-		BatchSize:             1,
-		Steps:                 20,
-		Seed:                  -1,
-		CFGScale:              7,
 		ImageCFGScale:         1.5,
-		SamplerName:           SamplerEuler,
-		ResizeMode:            ResizeModeJustResize,
-		Width:                 512,
-		Height:                512,
-		DenoisingStrength:     0.75,
 		InpaintingFill:        InpaintingFillFill,
 		InpaintFullRes:        1,
 		InpaintFullResPadding: 32,
@@ -91,12 +102,25 @@ func NewControlNetUnit() *ControlNetUnit {
 	}
 }
 
-func (i *Img2ImgInput) AddControlNetUnit(unit *ControlNetUnit) {
+func (i *Img2ImgInpaintUploadInput) AddControlNetUnit(unit *ControlNetUnit) {
 	i.AlwaysOnScripts.ControlNet.Args = append(i.AlwaysOnScripts.ControlNet.Args, unit)
 }
 
 // Img2Img send img2img request to an automatic1111 instance listening at automatic1111Url
 func Img2Img(automatic1111Url string, input *Img2ImgInput) (*ImgOutput, error) {
+	var (
+		output = &ImgOutput{}
+	)
+
+	if err := http.Post(fmt.Sprintf("%s/sdapi/v1/img2img", automatic1111Url), input, output); err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// Img2ImgInpaintUpload send img2img request to an automatic1111 instance listening at automatic1111Url
+func Img2ImgInpaintUpload(automatic1111Url string, input *Img2ImgInpaintUploadInput) (*ImgOutput, error) {
 	var (
 		output = &ImgOutput{}
 	)

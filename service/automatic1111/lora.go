@@ -2,15 +2,6 @@ package automatic1111
 
 import "fmt"
 
-const (
-	LoraColoredIcons = "Colored_Icons_by_vizsumit"
-)
-
-type Lora struct {
-	Name     string
-	Strength int
-}
-
-func (l *Lora) String() string {
-	return fmt.Sprintf("<lora:%s:%d>", l.Name, l.Strength)
+func LoraColoredIcons(strength float64, prompt string) string {
+	return fmt.Sprintf("<lora:Colored_Icons:%f> coloredic0n icon %s", strength, prompt)
 }
