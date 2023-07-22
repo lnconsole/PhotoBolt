@@ -2,6 +2,12 @@
 Your magical product photographer
 
 ## Instructions
+- Install photobolt fork of `automatic1111` (https://github.com/lnconsole/stable-diffusion-webui)
+  - Install photon and dreamshaper checkpoints
+  - Install ColoredIcon Lora
+  - Enable ControlNet in the UI, then download Canny preprocessor
+  - git checkout `photobolt` branch
+  - Launch with `./webui.sh --nowebui`
 - Install `rembg` via pip (https://github.com/danielgatis/rembg)
 - Install `ffmpeg` (brew or https://ffmpeg.org/download.html)
 - `cp .env-example .env` in the `/env` folder. Populate it
