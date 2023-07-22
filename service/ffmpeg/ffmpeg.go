@@ -58,7 +58,12 @@ func InsertWhiteBackground(input srvc.FileLocation) (srvc.FileLocation, error) {
 	}, nil
 }
 
-func OverlayImages(front srvc.FileLocation, back srvc.FileLocation) (srvc.FileLocation, error) {
+func OverlayImages(
+	front srvc.FileLocation,
+	back srvc.FileLocation,
+	frontWidth int,
+	frontHeight int,
+) (srvc.FileLocation, error) {
 	var (
 		outputPath = outputPath()
 		outputFile = fmt.Sprintf("combined-%s", back.Name)
@@ -70,7 +75,7 @@ func OverlayImages(front srvc.FileLocation, back srvc.FileLocation) (srvc.FileLo
 		"-i",
 		fmt.Sprintf("%s/%s", front.Path, front.Name),
 		"-filter_complex",
-		"[1:v]scale=256:256 [ov]; [0:v][ov]overlay",
+		fmt.Sprintf("[1:v]scale=%d:%d [ov]; [0:v][ov]overlay", frontWidth, frontHeight),
 		"-y",
 		fmt.Sprintf("%s/%s", outputPath, outputFile),
 	).Output()

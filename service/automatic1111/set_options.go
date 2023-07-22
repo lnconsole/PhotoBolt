@@ -7,7 +7,7 @@ import (
 )
 
 type SetOptionsInput struct {
-	SDModelCheckpoint string `json:"sd_model_checkpoint"`
+	SDModelCheckpoint SDModel `json:"sd_model_checkpoint"`
 }
 
 func SetOptions(automatic1111Url string, input *SetOptionsInput) error {

@@ -1,6 +1,7 @@
 package automatic1111
 
 type Sampler string
+type SDModel string
 
 const (
 	SamplerEuler         Sampler = "Euler"
@@ -26,10 +27,18 @@ const (
 	ControlNetModeMyPromptIsMoreImportant   = 1
 	ControlNetModeControlNetIsMoreImportant = 2
 
-	SDModelPhotonV1      = "photon_v1"
-	SDModelDreamShaperV7 = "dreamshaper_7"
+	SDModelPhotonV1      SDModel = "photon_v1"
+	SDModelDreamShaperV7 SDModel = "dreamshaper_7"
 )
 
 type ImgOutput struct {
 	Images []string `json:"images"`
+}
+
+func (sdm SDModel) NegativePrompt() string {
+	if sdm == SDModelPhotonV1 {
+		return "cartoon, painting, illustration, (worst quality, low quality, normal quality:2)"
+	} else {
+		return ""
+	}
 }

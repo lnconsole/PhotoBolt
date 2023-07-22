@@ -17,7 +17,7 @@ import (
 const (
 	// CHANGE ME
 	replacedBg_inputFile   = "/Users/ChongjinChua/Downloads/whisky.png"
-	replacedBg_inputPrompt = "A bouquet of flowers at a beach, surrounded by waves, in front of a volcano"
+	replacedBg_inputPrompt = "A whiskey bottle at a beach, surrounded by waves, in front of a volcano"
 	icon_inputFile         = "/Users/ChongjinChua/Downloads/ibex.png"
 	icon_inputPrompt       = "ibex"
 
@@ -33,6 +33,9 @@ func main() {
 		log.Printf("env err: %s", err)
 		return
 	}
+
+	log.Printf("/background prompt: %s", replacedBg_inputPrompt)
+	log.Printf("/icon prompt: %s", icon_inputPrompt)
 
 	if err := replaceBackground(); err != nil {
 		log.Fatalf(err.Error())

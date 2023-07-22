@@ -10,7 +10,7 @@ Your magical product photographer
   - Launch with `./webui.sh --nowebui`
 - Install `rembg` via pip (https://github.com/danielgatis/rembg)
 - Install `ffmpeg` (brew or https://ffmpeg.org/download.html)
-- `cp .env-example .env` in the `/env` folder. Populate it
+- `cp .env-example .env` in the `/env` folder. Populate it. NOTE: automatic1111 url should be pointing to the api server (7681 by default)
 - `go run .`
 
 ## TODO

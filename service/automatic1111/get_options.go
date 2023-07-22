@@ -7,7 +7,7 @@ import (
 )
 
 type GetOptionsOutput struct {
-	SDModelCheckpoint string `json:"sd_model_checkpoint"`
+	SDModelCheckpoint SDModel `json:"sd_model_checkpoint"`
 }
 
 func GetOptions(automatic1111Url string) (*GetOptionsOutput, error) {

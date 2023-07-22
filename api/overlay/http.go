@@ -70,6 +70,7 @@ func Combine() gin.HandlerFunc {
 		overlayOutput, err := ffmpeg.OverlayImages(
 			frontFileLocation,
 			backFileLocation,
+			256, 256, // 256 w x h for icon
 		)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{

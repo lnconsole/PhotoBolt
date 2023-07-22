@@ -2,6 +2,8 @@ package background
 
 import (
 	"fmt"
+	"image/png"
+	"strings"
 
 	"log"
 	"net/http"
@@ -20,13 +22,6 @@ import (
 )
 
 func Replace(automatic1111Url string) gin.HandlerFunc {
-	/*
-		remove bg
-		add white bg
-		generate mask and add white bg
-		call img2img
-		return img
-	*/
 	return func(c *gin.Context) {
 		var payload ReplaceBackgroundBody
 
@@ -72,17 +67,6 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 		}
 		defer func() { rembgOutput.Remove() }()
 
-		// convert backgroundless image to mask
-		maskOutput, err := ffmpeg.ConvertToMask(srvc.FileLocation{
-			Path: rembgOutput.Path,
-			Name: rembgOutput.Name,
-		})
-		if err != nil {
-			log.Printf("maskoutput err: %s", err)
-			return
-		}
-		defer func() { maskOutput.Remove() }()
-
 		// add white background to backgroundless image
 		whitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
 			Path: rembgOutput.Path,
@@ -94,32 +78,9 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 		}
 		defer func() { whitebg.Remove() }()
 
-		// add white background to mask image
-		maskwhitebg, err := ffmpeg.InsertWhiteBackground(srvc.FileLocation{
-			Path: maskOutput.Path,
-			Name: maskOutput.Name,
-		})
-		if err != nil {
-			log.Printf("maskwhitebg err: %s", err)
-			return
-		}
-		defer func() { maskwhitebg.Remove() }()
-
-		log.Printf(
-			"Ready for automatic1111\nPic with white background: %s\nMask with white background: %s\n",
-			whitebg.FullPath(),
-			maskwhitebg.FullPath(),
-		)
-
 		whiteBgFileBytes, err := os.ReadFile(whitebg.FullPath())
 		if err != nil {
 			log.Printf("error opening whitebg file: %v", err)
-			return
-		}
-
-		maskFileBytes, err := os.ReadFile(maskwhitebg.FullPath())
-		if err != nil {
-			log.Printf("error opening mask file: %v", err)
 			return
 		}
 
@@ -129,36 +90,38 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			return
 		}
 
-		maskFileBase64, err := shared.EncodeImageToBase64(maskFileBytes)
+		split := strings.Split(whiteBgFileBase64, ",")
+
+		inputImg, err := shared.GetImage(split[1])
 		if err != nil {
-			log.Printf("error base64 encoding mask bytes: %v", err)
+			log.Printf("error getimage: %v", err)
 			return
 		}
-
-		// all img2img input preparation
-		img2imgInput := automatic1111.NewImg2ImgInpaintUploadInput()
-		img2imgInput.Prompt = payload.Prompt
-		img2imgInput.SamplerName = automatic1111.SamplerDPMPP2MKarras
-		img2imgInput.InitImages = []string{whiteBgFileBase64}
-		img2imgInput.Mask = maskFileBase64
-		img2imgInput.InpaintFullResPadding = 40
-		img2imgInput.MaskBlur = 0
-		img2imgInput.DenoisingStrength = 0.75
-		img2imgInput.CFGScale = 6.0
-		img2imgInput.Steps = 30
+		// all txt2img input preparation
+		txt2img := automatic1111.NewText2ImgControlNetInput()
+		txt2img.SDModelCheckpoint = automatic1111.SDModelPhotonV1
+		txt2img.Prompt = payload.Prompt
+		txt2img.NegativePrompt = automatic1111.SDModelPhotonV1.NegativePrompt()
+		txt2img.BatchSize = 1
+		txt2img.Steps = 25
+		txt2img.Seed = -1
+		txt2img.CFGScale = 3
+		txt2img.SamplerName = automatic1111.SamplerDPMPP2M
+		txt2img.Width = inputImg.Bounds().Dx()
+		txt2img.Height = inputImg.Bounds().Dy()
 
 		cannyCNUnit := automatic1111.NewControlNetUnit()
 		cannyCNUnit.InputImage = whiteBgFileBase64
 		cannyCNUnit.Weight = 2
-		cannyCNUnit.ControlMode = 2
-		cannyCNUnit.ProcessorRes = 512
+		cannyCNUnit.ControlMode = automatic1111.ControlNetModeBalanced
+		cannyCNUnit.ProcessorRes = inputImg.Bounds().Dx()
 		cannyCNUnit.ThresholdA = 100
 		cannyCNUnit.ThresholdB = 200
-		img2imgInput.AddControlNetUnit(cannyCNUnit)
+		txt2img.AddControlNetUnit(cannyCNUnit)
 
-		imageOutput, err := automatic1111.Img2ImgInpaintUpload(
+		imageOutput, err := automatic1111.Text2ImgControlNet(
 			automatic1111Url,
-			img2imgInput,
+			txt2img,
 		)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -167,24 +130,60 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 			return
 		}
 
+		replacedOutput := srvc.FileLocation{
+			Path: fmt.Sprintf("%s/%s", env.PhotoBolt.RepoDirectory, "api/background"),
+			Name: uuid.New().String() + ".png",
+		}
+
+		img, err := shared.GetImage(imageOutput.Images[0])
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("%v", err),
+			})
+			return
+		}
+		f, err := os.Create(replacedOutput.FullPath())
+		png.Encode(f, img)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("%v", err),
+			})
+			return
+		}
+		defer func() { os.Remove(replacedOutput.FullPath()) }()
+
+		// overlay target object on generated background
+		overlayOutput, err := ffmpeg.OverlayImages(
+			rembgOutput,
+			replacedOutput,
+			txt2img.Width, txt2img.Height,
+		)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("overlayOutput err: %v", err),
+			})
+			return
+		}
+		defer func() { overlayOutput.Remove() }()
+
+		overlayFileBytes, err := os.ReadFile(overlayOutput.FullPath())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": fmt.Sprintf("error opening overlayOutput file: %v", err),
+			})
+			return
+		}
+
+		overlayFileBase64, err := shared.EncodeImageToBase64(overlayFileBytes)
+		if err != nil {
+			log.Printf("error base64 encoding overlayOutput bytes: %v", err)
+			return
+		}
+
+		split = strings.Split(overlayFileBase64, ",")
+
 		c.JSON(http.StatusOK, &ReplaceBackgroundResponse{
-			Image: imageOutput.Images,
+			Image: []string{split[1]},
 		})
 	}
 }
-
-// overlay logo on white background image
-// overlay, err := ffmpeg.OverlayImages(
-// 	srvc.FileLocation{
-// 		Path: inputPath,
-// 		Name: "beatzcoin.png",
-// 	},
-// 	srvc.FileLocation{
-// 		Path: whitebg.Path,
-// 		Name: whitebg.Name,
-// 	},
-// )
-// if err != nil {
-// 	log.Printf("overlay err: %s", err)
-// 	return
-// }
