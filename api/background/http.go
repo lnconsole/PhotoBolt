@@ -143,12 +143,14 @@ func Replace(automatic1111Url string) gin.HandlerFunc {
 		img2imgInput.Mask = maskFileBase64
 		img2imgInput.InpaintFullResPadding = 40
 		img2imgInput.MaskBlur = 0
-		img2imgInput.DenoisingStrength = 1.0
+		img2imgInput.DenoisingStrength = 0.75
 		img2imgInput.CFGScale = 6.0
+		img2imgInput.Steps = 30
 
 		cannyCNUnit := automatic1111.NewControlNetUnit()
 		cannyCNUnit.InputImage = whiteBgFileBase64
-		cannyCNUnit.Weight = 0.6
+		cannyCNUnit.Weight = 2
+		cannyCNUnit.ControlMode = 2
 		cannyCNUnit.ProcessorRes = 512
 		cannyCNUnit.ThresholdA = 100
 		cannyCNUnit.ThresholdB = 200

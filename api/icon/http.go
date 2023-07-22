@@ -71,6 +71,7 @@ func Generate(automatic1111Url string) gin.HandlerFunc {
 
 		// all img2img input preparation
 		img2imgInput := automatic1111.NewImg2ImgInput()
+		img2imgInput.SDModelCheckpoint = automatic1111.SDModelDreamShaperV7
 		img2imgInput.Prompt = automatic1111.LoraColoredIcons(0.9, payload.Prompt)
 		img2imgInput.SamplerName = automatic1111.SamplerDPMPP2MKarras
 		img2imgInput.InitImages = []string{inputFileBase64}

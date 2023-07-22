@@ -2,11 +2,13 @@ package automatic1111
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/lnconsole/photobolt/http"
 )
 
 type Img2ImgInput struct {
+	SDModelCheckpoint string   `json:"-"`
 	InitImages        []string `json:"init_images"`
 	Prompt            string   `json:"prompt"`
 	NegativePrompt    string   `json:"negative_prompt"`
@@ -58,6 +60,7 @@ type ControlNetUnit struct {
 // NewImg2ImgInput builds a new Img2Img input with default automatic1111 values
 func NewImg2ImgInput() *Img2ImgInput {
 	return &Img2ImgInput{
+		SDModelCheckpoint: SDModelPhotonV1,
 		InitImages:        []string{},
 		Prompt:            "",
 		NegativePrompt:    "",
@@ -112,6 +115,11 @@ func Img2Img(automatic1111Url string, input *Img2ImgInput) (*ImgOutput, error) {
 		output = &ImgOutput{}
 	)
 
+	if err := SetOptions(automatic1111Url, &SetOptionsInput{SDModelCheckpoint: input.SDModelCheckpoint}); err != nil {
+		return nil, err
+	}
+	log.Println("done instructing setoptions")
+
 	if err := http.Post(fmt.Sprintf("%s/sdapi/v1/img2img", automatic1111Url), input, output); err != nil {
 		return nil, err
 	}
@@ -124,6 +132,10 @@ func Img2ImgInpaintUpload(automatic1111Url string, input *Img2ImgInpaintUploadIn
 	var (
 		output = &ImgOutput{}
 	)
+
+	if err := SetOptions(automatic1111Url, &SetOptionsInput{SDModelCheckpoint: input.SDModelCheckpoint}); err != nil {
+		return nil, err
+	}
 
 	if err := http.Post(fmt.Sprintf("%s/sdapi/v1/img2img", automatic1111Url), input, output); err != nil {
 		return nil, err

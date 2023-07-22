@@ -16,7 +16,7 @@ import (
 
 const (
 	// CHANGE ME
-	replacedBg_inputFile   = "/Users/ChongjinChua/Downloads/a.png"
+	replacedBg_inputFile   = "/Users/ChongjinChua/Downloads/whisky.png"
 	replacedBg_inputPrompt = "A bouquet of flowers at a beach, surrounded by waves, in front of a volcano"
 	icon_inputFile         = "/Users/ChongjinChua/Downloads/ibex.png"
 	icon_inputPrompt       = "ibex"

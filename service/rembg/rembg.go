@@ -17,7 +17,7 @@ func RemoveBackground(input srvc.FileLocation) (srvc.FileLocation, error) {
 		env.PhotoBolt.RembgFullPath,
 		"i",
 		"-m",
-		"u2net",
+		"isnet-general-use",
 		fmt.Sprintf("%s/%s", input.Path, input.Name),
 		fmt.Sprintf("%s/%s", outputPath, outputFile),
 	).Output()
