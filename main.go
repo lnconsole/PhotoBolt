@@ -8,6 +8,7 @@ import (
 	"github.com/lnconsole/photobolt/api/icon"
 	"github.com/lnconsole/photobolt/api/overlay"
 	"github.com/lnconsole/photobolt/env"
+	"github.com/lnconsole/photobolt/service/ln"
 )
 
 func main() {
@@ -15,6 +16,17 @@ func main() {
 
 	if err := env.Init("env/.env"); err != nil {
 		log.Printf("env err: %s", err)
+		return
+	}
+
+	if err := ln.Init(
+		env.PhotoBolt.LNDMacaroonHex,
+		env.PhotoBolt.LNDCertPath,
+		env.PhotoBolt.LNDGrpcAddr,
+		env.PhotoBolt.LndClientNetwork(),
+		env.PhotoBolt.LnNetwork(),
+	); err != nil {
+		log.Printf("lnd init: %s", err)
 		return
 	}
 
