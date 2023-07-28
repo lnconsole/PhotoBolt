@@ -2,11 +2,14 @@ package ln
 
 import (
 	"context"
+	"crypto/rand"
+	"log"
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/lightninglabs/lndclient"
 	"github.com/lightningnetwork/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
 	"github.com/lightningnetwork/lnd/lnrpc/verrpc"
 	"github.com/lightningnetwork/lnd/lntypes"
 	"github.com/lightningnetwork/lnd/lnwire"
@@ -118,5 +121,69 @@ func PayInvoice(params PaymentParams) (*PaymentData, error) {
 
 	return &PaymentData{
 		Update: updatech,
+	}, nil
+}
+
+func CreateInvoice(params InvoiceParams) (*InvoiceData, error) {
+	var (
+		preimage = &lntypes.Preimage{}
+		ctx      = context.Background()
+	)
+	// create preimage
+	if _, err := rand.Read(preimage[:]); err != nil {
+		return nil, err
+	}
+	// add invoice
+	hash, bolt11, err := lndService.Client.AddInvoice(
+		ctx,
+		&invoicesrpc.AddInvoiceData{
+			Memo:     params.Memo,
+			Preimage: preimage,
+			Value:    lnwire.MilliSatoshi(params.AmountMsat),
+			Expiry:   int64(params.ExpirySeconds),
+			Private:  false,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	zbolt11, err := zpay32.Decode(bolt11, lnNetwork)
+	if err != nil {
+		return nil, err
+	}
+	// track invoice
+	updatech := make(chan InvoiceUpdate)
+	go func() {
+		// service := x.WriteGrpcService
+		// if x.ReadGrpcService != nil {
+		// 	service = x.ReadGrpcService
+		// }
+		updates, errs, err := lndService.Invoices.SubscribeSingleInvoice(ctx, hash)
+		if err != nil {
+			log.Printf("sub single inv: %s", err.Error())
+			return
+		}
+		for {
+			select {
+			case update := <-updates:
+				updatech <- InvoiceUpdate{
+					Bolt11:        bolt11,
+					InvoiceStatus: update.State.String(),
+					ReceivedMsat:  int(update.AmtPaidMsat),
+				}
+			case err := <-errs:
+				if err != nil {
+					log.Printf("inv update err: %s", err.Error())
+				}
+				return
+			}
+		}
+	}()
+
+	return &InvoiceData{
+		Bolt11:   bolt11,
+		Zbolt11:  zbolt11,
+		Preimage: preimage,
+		Update:   updatech,
 	}, nil
 }

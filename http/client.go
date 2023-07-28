@@ -9,6 +9,10 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+
+	"github.com/lnconsole/photobolt/env"
+	srvc "github.com/lnconsole/photobolt/service"
+	"github.com/lnconsole/photobolt/shared"
 )
 
 func Post(url string, body interface{}, response interface{}) error {
@@ -159,6 +163,86 @@ func Get(url string, response interface{}) error {
 	}
 
 	return nil
+}
+
+func DownloadFile(url string, loc srvc.FileLocation) error {
+	request, err := http.NewRequest(
+		http.MethodGet,
+		url,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	client := &http.Client{}
+	httpResponse, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer httpResponse.Body.Close()
+
+	if httpResponse.StatusCode < 200 || httpResponse.StatusCode > 299 {
+		return fmt.Errorf("http response code: %d", httpResponse.StatusCode)
+	}
+
+	// Create a empty file
+	file, err := os.Create(loc.FullPath())
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Write the bytes to the fiel
+	_, err = io.Copy(file, httpResponse.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UploadFileImgBB(fileBase64 string) (string, error) {
+	form := new(bytes.Buffer)
+	writer := multipart.NewWriter(form)
+	formField, err := writer.CreateFormField("image")
+	if err != nil {
+		return "", err
+	}
+	_, err = formField.Write([]byte(fileBase64))
+	if err != nil {
+		return "", err
+	}
+	writer.Close()
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.imgbb.com/1/upload?expiration=600&key=%s", env.PhotoBolt.ImgbbSecret), form)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	res := result{}
+	shared.CleanUnmarshal(bodyText, &res)
+
+	log.Printf("file url: %s", res.D.Url)
+
+	return res.D.Url, nil
+}
+
+type Data struct {
+	Url string `json:"url"`
+}
+
+type result struct {
+	D Data `json:"data"`
 }
 
 func openFile(f string) *os.File {

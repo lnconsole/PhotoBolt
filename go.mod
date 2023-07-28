@@ -4,21 +4,26 @@ go 1.20
 
 replace github.com/lightninglabs/lndclient => github.com/satelite-org/lndclient v1.0.1-0.20230701224058-9e4c6cbc822f
 
+replace github.com/nbd-wtf/go-nostr v0.19.5 => github.com/lnconsole/go-nostr v0.9.1-cxl
+
 require (
+	github.com/btcsuite/btcd v0.23.5-0.20230228185050-38331963bddd
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lightninglabs/lndclient v0.16.0-14
 	github.com/lightningnetwork/lnd v0.16.3-beta
+	github.com/nbd-wtf/go-nostr v0.19.5
 )
 
 require (
+	github.com/JohnNON/ImgBB v0.0.0-20221125191941-c480ce0ee6a3 // indirect
+	github.com/SaveTheRbtz/generic-sync-map-go v0.0.0-20220414055132-a37292614db8 // indirect
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
 	github.com/aead/siphash v1.0.1 // indirect
 	github.com/andybalholm/brotli v1.0.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/btcsuite/btcd v0.23.5-0.20230228185050-38331963bddd // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
 	github.com/btcsuite/btcd/btcutil/psbt v1.1.8 // indirect
@@ -121,6 +126,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
+	github.com/valyala/fastjson v1.6.3 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect

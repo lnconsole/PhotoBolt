@@ -17,6 +17,11 @@ type photoBolt struct {
 	LNDCertPath    string `envconfig:"LND_TLS_CERT_PATH"`
 	LNDGrpcAddr    string `envconfig:"LND_GRPC_ADDR"`
 
+	NostrPrivateKey string `envconfig:"NOSTR_PRIVATE_KEY"`
+	NostrRelay      string `envconfig:"NOSTR_RELAY"`
+
+	ImgbbSecret string `envconfig:"IMGBB_SECRET"`
+
 	AppEnv string `envconfig:"APP_ENV"`
 }
 

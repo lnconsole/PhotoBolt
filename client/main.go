@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/lnconsole/photobolt/api/background"
-	"github.com/lnconsole/photobolt/api/icon"
-	"github.com/lnconsole/photobolt/api/overlay"
+	"github.com/lnconsole/photobolt/api/http/background"
+	"github.com/lnconsole/photobolt/api/http/icon"
+	"github.com/lnconsole/photobolt/api/http/overlay"
 	"github.com/lnconsole/photobolt/env"
 	"github.com/lnconsole/photobolt/http"
 	"github.com/lnconsole/photobolt/service/ln"
