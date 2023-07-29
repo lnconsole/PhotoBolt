@@ -37,8 +37,10 @@ Video Demo [here]()
 - Install `polar` or a LND mainnet node. Both client and server use Lightning
 - Install `alby` (you will need a mainnet node for the server)
 - Connect to a public nostr relay or Install `relayer`
+- You'll also need an [ImgBB](https://imgbb.com/) api secret key
 - `cp .env-example .env` in the `/env` folder. Populate it. NOTE: automatic1111 url should be pointing to the api server (7681 by default)
 - `go run .` to start the service provider
+- `cp .env-example .env` in the `/frontend` folder. Populate it
 - `cd frontend; npm run dev` to start the client
 
 ## L402
