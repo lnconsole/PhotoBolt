@@ -56,7 +56,7 @@
             <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">4. View Final Image here!</h1>
           </div>
           <div class="h-full flex flex-col items-center justify-center" v-if="jobOverlayLogo.output.length > 0">
-            <img class="h-[700px]" :src="jobOverlayLogo.output" alt="Uploaded Image" />
+            <img class="h-[600px]" :src="jobOverlayLogo.output" alt="Uploaded Image" />
           </div>
         </div>
       </div>
@@ -74,7 +74,6 @@ const productImageUrl = ref<string | null>(null);
 const productPrompt = ref<string>('')
 const logoImageUrl = ref<string | null>(null);
 const logoPrompt = ref<string>('')
-// const finalImageUrl = ref<string | null>(null);
 const jobPending = ref<boolean>(false);
 const { 
   submitJobRequests,

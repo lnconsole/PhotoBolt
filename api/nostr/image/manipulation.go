@@ -20,42 +20,6 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
-/*
-s = make(chan, nostr.sub)
-e = make(chan, nostr.event)
-model.sub(s, e)
-s <- nostr.sub{ 65007 }
-
-for e in e
-	( any error, log & continue )
-	if 65007
-		check i
-			if text, process()
-			if job, s <- nostr.sub{ 65001(ref 65007)}
-	if 65001
-		process()
-
-process(ji)
-	go routine
-	if ji.Jobrequest.param, (background & clear) || (overlay)
-		pch = generate invoice
-		send 65000
-		for status in pch:
-			if success
-				send 65000 processing
-				if param, (bg & clear)
-					loc = save file
-					rembg.removebackground(file loc)
-					send 65001
-				elif param, (overlay)
-					parse front & back
-					ffmpeg.OverlayImages
-					send 65001
-				break
-			elif failed, break
-			log
-*/
-
 func KindManipulation() int {
 	return 65007
 }

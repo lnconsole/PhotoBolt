@@ -21,42 +21,6 @@ import (
 	"github.com/nbd-wtf/go-nostr"
 )
 
-/*
-s = make(chan, nostr.sub)
-e = make(chan, nostr.event)
-model.sub(s, e)
-s <- nostr.sub{ 65005 }
-
-for e in e
-	( any error, log & continue )
-	if 65005
-		check i
-			if text, process()
-			if job, s <- nostr.sub{ 65001(ref 65007)}
-	if 65001
-		process()
-
-process(input)
-	go routine
-	if param, (background & clear) || (overlay)
-		pch = generate invoice
-		send 65000
-		for status in pch:
-			if success
-				send 65000 processing
-				if param, (bg & clear)
-					loc = save file
-					rembg.removebackground(file loc)
-					send 65001
-				elif param, (overlay)
-					parse front & back
-					ffmpeg.OverlayImages
-					send 65001
-				break
-			elif failed, break
-			log
-*/
-
 func KindGeneration() int {
 	return 65005
 }
@@ -71,7 +35,6 @@ func FilterGeneration() nostr.Filter {
 
 func ProcessGeneration(jr *model.JobRequest) {
 	go func() {
-		log.Printf("generating: %s", jr.Event.ID)
 		paramTag := jr.Event.Tags.GetFirst([]string{"param"})
 		itag := jr.Itags.GetFirst([]string{"i"})
 		// Generate Invoice

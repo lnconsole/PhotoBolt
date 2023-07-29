@@ -26,7 +26,6 @@ func (j *JobRequest) AddInput(itag nostr.Tag) {
 }
 
 func (j *JobRequest) Receive(inputEventID string, result string) {
-	log.Printf("receiving input: %s", inputEventID)
 	if sub, pending := j.PendingJobInputs[inputEventID]; pending {
 		itag := j.Itags.GetFirst([]string{"i", inputEventID})
 		if itag == nil || len(*itag) < 3 {
@@ -41,15 +40,12 @@ func (j *JobRequest) Receive(inputEventID string, result string) {
 		(*itag)[1] = base64
 		(*itag)[2] = "text"
 
-		log.Printf("successfully received input: %s", inputEventID)
-
 		sub.Unsub()
 		delete(j.PendingJobInputs, inputEventID)
 	}
 }
 
 func (j *JobRequest) Ready() bool {
-	log.Printf("is ready: %v", j.PendingJobInputs)
 	return len(j.PendingJobInputs) == 0
 }
 
