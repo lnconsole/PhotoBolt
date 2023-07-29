@@ -146,15 +146,16 @@ export function useJobRequest() {
                 return
             }
             let state = jobreq_state.get(eTag[1])!
-            state.value.pk = event.pubkey
             if (event.kind === 65000) {
                 const statusTag = event.tags.find(([k]) => k === 'status')
                 if (statusTag === undefined) {
                     console.log('what is this status: ' + statusTag)
                     return
                 }
-                state.value.stateVerbose = statusTag[2]
                 if (statusTag[1] === 'payment-required') {
+                    if (state.value.state === JobRequestState.Offered) {
+                        return // first come first serve
+                    }
                     const amountTag = event.tags.find(([k]) => k === 'amount')!
                     state.value.state = JobRequestState.Offered
                     state.value.invoice = amountTag[2]
@@ -164,6 +165,7 @@ export function useJobRequest() {
                     console.log('what is this status: ' + statusTag)
                     return
                 }
+                state.value.stateVerbose = statusTag[2]
             } else if (event.kind === 65001) {
                 state.value.state = JobRequestState.Completed
                 state.value.stateVerbose = 'Job Completed!'
@@ -173,6 +175,7 @@ export function useJobRequest() {
                 console.log('what is this kind: ' + event.kind)
                 return
             }
+            state.value.pk = event.pubkey
         })
         
 

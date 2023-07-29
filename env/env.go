@@ -21,6 +21,7 @@ type photoBolt struct {
 	NostrRelay      string `envconfig:"NOSTR_RELAY"`
 
 	ImgbbSecret string `envconfig:"IMGBB_SECRET"`
+	ServerPort  string `envconfig:"SERVER_PORT"`
 
 	AppEnv string `envconfig:"APP_ENV"`
 }

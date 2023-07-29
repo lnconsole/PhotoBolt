@@ -47,7 +47,7 @@ func main() {
 
 	engine := gin.Default()
 	setupRoutes(engine)
-	engine.Run()
+	engine.Run(env.PhotoBolt.ServerPort)
 }
 
 func setupRoutes(engine *gin.Engine) {

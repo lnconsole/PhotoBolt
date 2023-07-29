@@ -8,16 +8,22 @@ module.exports = {
     extend: {
       colors: {
         pbrown: {
-          500: '#70acc7'
+          500: '#20acc7'
         },
         pbrown2: {
+          500: '#1d9bb3'
+        },
+        pbrown3: {
+          500: '#1d9bb3'
+        },
+        pbrown4: {
           500: '#20acc7'
         },
         pbg: {
           500: '#f2f2f2'
         },
         pbg2: {
-          500: '#eaf1f6'
+          500: '#a6dee9'
         },
         ptxtl: {
           500: '#f8dfdc'

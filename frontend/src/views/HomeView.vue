@@ -1,44 +1,44 @@
 <template>
   <div class="flex flex-col bg-pbg-500 w-full h-screen">
-    <h1 class="text-center text-ptextd-500 text-3xl font-bold underline m-3">🤖 Product Photography, but crowdsourced ⚡️</h1>
+    <h1 class="text-center text-ptextd-500 text-4xl m-3 font-bold">🤖 Product Photography, but Crowdsourced ⚡️</h1>
     <div class="flex flex-row w-full h-full">
-      <div class="flex flex-col py-2 pl-2 bg-pbg-500 basis-7/12">
-        <div class="flex flex-row mb-2 basis-1/2">
+      <div class="flex flex-col py-4 pl-4 bg-pbg-500 basis-7/12">
+        <div class="flex flex-row basis-5/12">
           <!-- product image -->
-          <div class="bg-pbrown-500 p-2 mr-1 basis-1/2 flex flex-col rounded-3xl">
-            <input class="text-ptxtl-500" type="file" @change="handleProductFileChange" accept=".png" />
-            <input class="mt-2 h-[50px] p-2" v-model="productPrompt" placeholder="Enter Prompt" />
+          <div class="bg-pbrown-500 p-3 mr-2 basis-1/2 flex flex-col rounded-3xl shadow-2xl shadow-red-500">
+            <input class="text-ptxtl-500 h-[45px] text-sm" type="file" @change="handleProductFileChange" accept=".png" />
+            <input class="rounded-xl h-[35px] p-2" v-model="productPrompt" placeholder="Enter Prompt" />
             <div v-if="!productImageUrl" class="mt-2 flex items-center h-full w-full flex-col justify-center">
               <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">1. Upload Product Image &</h1>
               <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">Enter Prompt</h1>
             </div>
             <div class="flex flex-col items-center" v-if="productImageUrl">
-              <img class="mt-2 h-[230px] w-auto" :src="productImageUrl" alt="Uploaded Image" />
+              <img class="mt-2 h-[160px] w-auto" :src="productImageUrl" alt="Uploaded Image" />
             </div>
           </div>
           <!-- logo image -->
-          <div class="bg-pbrown2-500 p-2 ml-1 basis-1/2 flex flex-col rounded-3xl">
-            <input class="text-ptxtl-500" type="file" @change="handleLogoFileChange" accept=".png" />
-            <input class="mt-2 h-[50px] p-2" v-model="logoPrompt" placeholder="Enter Prompt" />
+          <div class="bg-pbrown2-500 p-3 ml-2 basis-1/2 flex flex-col rounded-3xl shadow-2xl shadow-yellow-500">
+            <input class="text-ptxtl-500 h-[45px] text-sm" type="file" @change="handleLogoFileChange" accept=".png" />
+            <input class="rounded-xl h-[35px] p-2" v-model="logoPrompt" placeholder="Enter Prompt" />
             <div v-if="!logoImageUrl" class="flex items-center h-full w-full flex-col justify-center">
               <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">2. Upload Logo Image &</h1>
               <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">Enter Prompt</h1>
             </div>
             <div class="flex flex-col items-center" v-if="logoImageUrl">
-              <img class="mt-2 h-[230px]" :src="logoImageUrl" alt="Uploaded Image" />
+              <img class="mt-2 h-[160px]" :src="logoImageUrl" alt="Uploaded Image" />
             </div>
           </div>
         </div>
         <!-- task list -->
-        <div class="bg-pbrown-500 basis-1/2 overflow-auto flex flex-col rounded-3xl">
+        <div class="bg-pbrown3-500 mt-4 basis-7/12 overflow-auto flex flex-col rounded-3xl shadow-2xl shadow-blue-500">
           <div v-if="!productImageUrl || !logoImageUrl || productPrompt.length === 0 || logoPrompt.length === 0" class="flex items-center h-full w-full">
             <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">3. Submit Job Requests</h1>
           </div>
           <div class="flex items-center justify-center h-full w-full" v-if="productImageUrl && logoImageUrl && productPrompt.length > 0 && logoPrompt.length > 0 && !jobPending">
             <button @click="submitJob" class="bg-btna-500 text-btntxta-500 w-[100px] h-[50px] rounded-xl font-bold">Submit 🚀</button>
           </div>
-          <div v-if="jobPending" class="flex flex-col h-full w-full p-2">
-            <h1 class="text-ptxtl-500 text-center text-3xl font-bold">{{ pendingTasks }} Tasks Pending</h1>
+          <div v-if="jobPending" class="flex flex-col h-full w-full p-3">
+            <h1 class="text-ptxtl-500 text-center text-3xl font-bold mb-2">{{ pendingTasks }} Tasks Pending</h1>
             <div class="flex flex-col w-full h-full">
               <DVMTask :title="'1. Remove Product Background'" :jobRequest="jobClearBackground"></DVMTask>
               <DVMTask :title="'2. Generate Logo'" :jobRequest="jobGenerateLogo"></DVMTask>
@@ -49,9 +49,9 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col p-2 basis-5/12">
+      <div class="flex flex-col p-4 basis-5/12">
         <!-- final image -->
-        <div class="bg-pbrown-500 h-full flex flex-col rounded-3xl">
+        <div class="bg-pbrown4-500 h-full flex flex-col rounded-3xl shadow-green-500 shadow-2xl">
           <div v-if="jobOverlayLogo.output.length === 0" class="flex items-center h-full w-full">
             <h1 class="text-3xl text-ptxtl-500 text-center w-full font-bold">4. View Final Image here!</h1>
           </div>

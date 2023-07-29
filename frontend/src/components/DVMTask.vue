@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-pbg2-500 basis-1/5 mx-1 mb-1 flex flex-row rounded-xl">
+    <div class="bg-pbg2-500 basis-1/5 mx-1 mb-3 flex flex-row rounded-xl">
         <div class="flex flex-col basis-10/12">
             <div class="basis-1/2 h-full ml-1 mt-1 font-bold">
                 {{ props.title }}

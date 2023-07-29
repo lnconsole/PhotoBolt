@@ -84,6 +84,7 @@ func ProcessGeneration(jr *model.JobRequest) {
 			log.Printf("create inv: %s", err)
 			return
 		}
+		time.Sleep(time.Duration(shared.RandInt(3)) * time.Second)
 		// send 65000
 		if _, err := pstr.Publish(context.Background(), nostr.Event{
 			CreatedAt: time.Now(),

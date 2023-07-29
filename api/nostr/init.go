@@ -169,7 +169,6 @@ func Init() error {
 				eid := etag.Value()
 				log.Printf("got 65001: %s", eid)
 				if consumers, ok := PendingJobRequestID_Consumer[eid]; ok {
-					log.Printf("%d consumers are waiting", len(consumers))
 					for _, consumer := range consumers {
 						consumer.Receive(eid, evt.Content)
 						if consumer.Ready() {
