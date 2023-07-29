@@ -1,5 +1,6 @@
 # PhotoBolt
 PhotoBolt converts a Product Image into a Poster
+<img width="1494" alt="Screenshot 2023-07-29 at 1 08 31 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/b5673eef-9526-44d9-a4c0-b51d8c223f31">
 
 This repo contains both the `client`(vue) and `service provider`(go). Client breaks down the poster generation task into 5 smaller tasks, chain them together via [NIP90(Data Vending Machine)](https://github.com/nostr-protocol/nips/blob/vending-machine/90.md) and broadcast them to the nostr network. Service provider accepts each job requests by prompting for a payment, then process and return the job result back to the client.
 
