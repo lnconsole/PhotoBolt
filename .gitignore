@@ -32,3 +32,6 @@ service/rembg/output/*
 combined.png
 icon.png
 replaced-bg.png
+
+tls.cert
+*.macaroon
