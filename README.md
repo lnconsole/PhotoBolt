@@ -4,7 +4,7 @@ PhotoBolt converts a Product Image into a Poster
 
 This repo contains both the `client`(vue) and `service provider`(go). Client breaks down the poster generation task into 5 smaller tasks, chain them together via [NIP90(Data Vending Machine)](https://github.com/nostr-protocol/nips/blob/vending-machine/90.md) and broadcast them to the nostr network. Service provider accepts each job requests by prompting for a payment, then process and return the job result back to the client.
 
-Although each job request may depend on another job request as an input, they could still be processed independently by different service providers. You could test it out by running two PhotoBolt service provider instances when generating a poster. You should be able to tell which service provider took a task based on the avatar rendered under the `Pending Tasks` UI section.
+Although each job request may depend on another job request as an input, they could still be processed independently by different service providers. You could test it out by running two PhotoBolt service provider instances when generating a poster. You should be able to tell which service provider took a task based on the avatar rendered under the `Tasks Pending` UI section.
 
 Video Demo [here]()
 
