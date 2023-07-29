@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -70,6 +71,7 @@ func FilterGeneration() nostr.Filter {
 
 func ProcessGeneration(jr *model.JobRequest) {
 	go func() {
+		log.Printf("generating: %s", jr.Event.ID)
 		paramTag := jr.Event.Tags.GetFirst([]string{"param"})
 		itag := jr.Itags.GetFirst([]string{"i"})
 		// Generate Invoice
@@ -88,7 +90,7 @@ func ProcessGeneration(jr *model.JobRequest) {
 			Kind:      pstr.KindJobFeedback,
 			Content:   "",
 			Tags: nostr.Tags{
-				{"status", "payment-required", "I would like to process this job for you! Please pay up 🙂"},
+				{"status", "payment-required", fmt.Sprintf("I would like to process this job for %d sats", chargeMsat/1000)},
 				{"amount", fmt.Sprintf("%d", chargeMsat), lnData.Bolt11},
 				{"e", jr.Event.ID, pstr.RelayUrl},
 				{"p", jr.Event.PubKey},
@@ -178,7 +180,13 @@ func ProcessGeneration(jr *model.JobRequest) {
 						log.Printf("unknown param: %v", paramTag)
 						return
 					}
-					inputImg, err := shared.GetImage(itag.Value())
+					cleaned := itag.Value()
+					split := strings.Split(cleaned, ",")
+					if len(split) > 1 {
+						cleaned = split[1]
+					}
+
+					inputImg, err := shared.GetImage(cleaned)
 					if err != nil {
 						log.Printf("error getimage: %v", err)
 						return

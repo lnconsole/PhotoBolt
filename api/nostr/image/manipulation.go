@@ -78,7 +78,7 @@ func ProcessManipulation(jr *model.JobRequest) {
 			return
 		}
 		if (jobType == "background" && len(*paramTag) < 3) ||
-			(jobType == "overlay" && len(*paramTag) < 2) {
+			(jobType == "overlay" && len(*paramTag) < 3) {
 			log.Printf("incomplete param: %v", paramTag)
 			return
 		}
@@ -98,7 +98,7 @@ func ProcessManipulation(jr *model.JobRequest) {
 			Kind:      pstr.KindJobFeedback,
 			Content:   "",
 			Tags: nostr.Tags{
-				{"status", "payment-required", "I would like to process this job for you! Please pay up 🙂"},
+				{"status", "payment-required", fmt.Sprintf("I would like to process this job for %d sats", chargeMsat/1000)},
 				{"amount", fmt.Sprintf("%d", chargeMsat), lnData.Bolt11},
 				{"e", jr.Event.ID, pstr.RelayUrl},
 				{"p", jr.Event.PubKey},
@@ -208,16 +208,34 @@ func ProcessManipulation(jr *model.JobRequest) {
 						log.Printf("save png: %s", frontFileLocation.FullPath())
 						return
 					}
+					var (
+						width  int
+						height int
+					)
+					if (*paramTag)[2] == "full" {
+						backImg, err := shared.GetImage(backBase64)
+						if err != nil {
+							log.Printf("error getimage: %v", err)
+							return
+						}
+						width = backImg.Bounds().Dx()
+						height = backImg.Bounds().Dy()
+					} else { // logo
+						width = 256
+						height = 256
+					}
 					// convert backgroundless image to mask
 					overlayOutput, err := ffmpeg.OverlayImages(
 						frontFileLocation,
 						backFileLocation,
-						256, 256, // 256 w x h for icon
+						width, height,
 					)
 					if err != nil {
 						log.Printf("overlay images: %s", err)
 						return
 					}
+					frontFileLocation.Remove()
+					backFileLocation.Remove()
 					// disk to base64
 					outputBase64, err := overlayOutput.ToBase64()
 					if err != nil {

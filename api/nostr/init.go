@@ -1,15 +1,10 @@
 package istr
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/google/uuid"
 	nimage "github.com/lnconsole/photobolt/api/nostr/image"
 	"github.com/lnconsole/photobolt/api/nostr/model"
-	"github.com/lnconsole/photobolt/env"
-	"github.com/lnconsole/photobolt/http"
-	srvc "github.com/lnconsole/photobolt/service"
 	pstr "github.com/lnconsole/photobolt/service/nostr"
 	"github.com/nbd-wtf/go-nostr"
 )
@@ -81,8 +76,9 @@ var (
 
 func Init() error {
 	var (
-		PendingJobRequest = map[string]*model.JobRequest{}    // map[input_eid]. cache of nostr events we are waiting for. Job input is a pointer that gets updated till there are no more pending inputs
-		Processor         = map[int]func(*model.JobRequest){} // map[kind]fn(Jobrequest)error
+		PendingJobRequestID_Consumer = map[string][]*model.JobRequest{}  // map[input_eid]. cache of nostr events we are waiting for. Job input is a pointer that gets updated till there are no more pending inputs
+		Processor                    = map[int]func(*model.JobRequest){} // map[kind]fn(Jobrequest)error
+		seen                         = map[string]bool{}
 		// err               error
 	)
 
@@ -98,13 +94,21 @@ func Init() error {
 
 	go func() {
 		for evt := range pstr.Mainch {
+			if seen[evt.ID] {
+				continue
+			}
+			seen[evt.ID] = true
+
 			log.Printf("rcv: %v", evt)
 			if evt.Kind == nimage.KindGeneration() ||
 				evt.Kind == nimage.KindManipulation() {
 				var (
-					jr                  = &model.JobRequest{Event: evt}
-					pendingJobInputEids = []string{}
-					itags               = evt.Tags.GetAll([]string{"i"})
+					jr = &model.JobRequest{
+						PendingJobInputs: map[string]*nostr.Subscription{},
+						Event:            evt,
+					}
+					// pendingJobInputEids = []string{}
+					itags = evt.Tags.GetAll([]string{"i"})
 				)
 				for _, itag := range itags {
 					if len(itag) < 3 {
@@ -112,28 +116,30 @@ func Init() error {
 					}
 					inputEventID := itag.Value()
 					if itag[2] == "job" {
-						pendingJobInputEids = append(pendingJobInputEids, itag.Value())
+						newConsumers := []*model.JobRequest{jr}
+						if consumers, ok := PendingJobRequestID_Consumer[inputEventID]; ok {
+							newConsumers = append(newConsumers, consumers...)
+						}
+						PendingJobRequestID_Consumer[inputEventID] = newConsumers
+						// pendingJobInputEids = append(pendingJobInputEids, inputEventID)
 						sub := pstr.Subscribe(nostr.Filters{{
 							Kinds: []int{kindJobResult},
-							IDs:   []string{inputEventID}, // eid
+							Tags: nostr.TagMap{
+								"e": []string{inputEventID},
+							},
 						}})
 						jr.Wait(inputEventID, sub)
-						jr.AddInput(itag)
+						copy := nostr.Tag{}
+						for idx := range itag {
+							copy = append(copy, itag[idx])
+						}
+						jr.AddInput(copy)
 					} else if itag[2] == "url" {
-						downloaded := srvc.FileLocation{
-							Path: fmt.Sprintf("%s/api/nostr", env.PhotoBolt.RepoDirectory),
-							Name: uuid.New().String() + ".png",
-						}
-						if err := http.DownloadFile(itag[1], downloaded); err != nil {
-							log.Printf("download file: %s", err.Error())
-							continue
-						}
-						base64, err := downloaded.ToBase64()
+						base64, err := jr.DownloadUrl(itag[1])
 						if err != nil {
-							log.Printf("tobase64: %s", err.Error())
+							log.Printf("download url: %s", err.Error())
 							continue
 						}
-						downloaded.Remove()
 						copy := nostr.Tag{}
 						for idx := range itag {
 							if idx == 1 {
@@ -152,21 +158,27 @@ func Init() error {
 						if process, ok := Processor[evt.Kind]; ok {
 							process(jr)
 						}
-					} else {
-						for _, id := range pendingJobInputEids {
-							PendingJobRequest[id] = jr
-						}
 					}
 				}
+				// for _, id := range pendingJobInputEids {
+				// 	log.Printf("adding pending job request id: %s", id)
+				// 	PendingJobRequest[id] = jr
+				// }
 			} else if evt.Kind == kindJobResult { // job result
-				if jr, ok := PendingJobRequest[evt.ID]; ok {
-					delete(PendingJobRequest, evt.ID)
-					jr.Receive(evt)
-					if jr.Ready() {
-						if process, ok := Processor[evt.Kind]; ok {
-							process(jr)
+				etag := evt.Tags.GetFirst([]string{"e"})
+				eid := etag.Value()
+				log.Printf("got 65001: %s", eid)
+				if consumers, ok := PendingJobRequestID_Consumer[eid]; ok {
+					log.Printf("%d consumers are waiting", len(consumers))
+					for _, consumer := range consumers {
+						consumer.Receive(eid, evt.Content)
+						if consumer.Ready() {
+							if process, ok := Processor[consumer.Event.Kind]; ok {
+								process(consumer)
+							}
 						}
 					}
+					delete(PendingJobRequestID_Consumer, eid)
 				}
 			}
 		}

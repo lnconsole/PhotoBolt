@@ -71,7 +71,7 @@ func Publish(ctx context.Context, evt nostr.Event) (*nostr.Event, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to %s: %s", RelayUrl, err)
 	}
-	log.Printf("posting to: %s, %s", RelayUrl, sRelay.Publish(ctx, evt))
+	log.Printf("posting to: %s,kind: %d,id: %s, %s", RelayUrl, evt.Kind, evt.ID, sRelay.Publish(ctx, evt))
 	sRelay.Close()
 
 	return &evt, nil
