@@ -27,15 +27,15 @@ Video Demo [here](https://youtu.be/xex9rEsrU5I)
 
 ## Instructions
 - Install `automatic1111`
-  - Install photon and dreamshaper checkpoints
-  - Install ColoredIcon Lora
-  - Enable ControlNet in the UI, then download Canny preprocessor
+  - Install photon and dreamshaper checkpoints [civitai](https://civitai.com/)
+  - Install ColoredIcon Lora [civitai](https://civitai.com/)
+  - Enable ControlNet in the UI, then download Canny preprocessor [link](https://huggingface.co/lllyasviel/control_v11p_sd15_canny)
   - git checkout `photobolt` branch
   - Launch with `./webui.sh --nowebui`
-- Install `rembg`
-- Install `ffmpeg`
-- Install `polar` or a LND mainnet node. Both client and server use Lightning
-- Install `alby` (you will need a mainnet node for the server)
+- Install `rembg` CLI tool
+- Install `ffmpeg` CLI tool
+- Install `polar` or a LND mainnet node. Both client and server require the use of Lightning
+- Install `alby` to be used with the web client (you will need a mainnet node for the server)
 - Connect to a public nostr relay or Install `relayer` and point both client & service provider to the relayer instance
 - You'll also need an [ImgBB](https://imgbb.com/) api secret key
 - `cp .env-example .env` in the `/env` folder. Populate it. NOTE: automatic1111 url should be pointing to the api server (7681 by default)
