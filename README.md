@@ -16,7 +16,7 @@ Although each job request may depend on another job request as an input, they co
 Video Demo [here](https://youtu.be/xex9rEsrU5I)
 
 ## Summary of tech used
-- [automatic1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui) Stable Diffusion server
+- [automatic1111](https://github.com/lnconsole/stable-diffusion-webui) Stable Diffusion server
 - [rembg](https://github.com/danielgatis/rembg) Background removal tool
 - [ffmpeg](https://ffmpeg.org/) Media processing tool
 - [polar](https://github.com/jamaljsr/polar) Simulated Lightning Network
