@@ -1,5 +1,6 @@
 import { ref, type Ref, computed } from 'vue'
 import { relayInit, generatePrivateKey, getPublicKey, getEventHash, getSignature, Kind } from 'nostr-tools'
+import { useGlobals } from '../main'
 
 export enum JobRequestState {
     Preparing,
@@ -70,13 +71,14 @@ const pk = getPublicKey(sk) // `pk` is a hex string
 let jobreq_state = new Map<string, Ref<JobRequest>>();
 
 export function useJobRequest() {
+    const { nostrRelay } = useGlobals()
     const submitJobRequests = async (
         productUrl: string, 
         productPrompt: string, 
         logoUrl: string,
         logoPrompt: string, 
     ) => {
-        const relay = relayInit('ws://127.0.0.1:7447')
+        const relay = relayInit(nostrRelay)
         relay.on('connect', () => {
           console.log(`connected to ${relay.url}`)
         })
