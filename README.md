@@ -36,12 +36,14 @@ Video Demo [here]()
 - Install `ffmpeg`
 - Install `polar` or a LND mainnet node. Both client and server use Lightning
 - Install `alby` (you will need a mainnet node for the server)
-- Connect to a public nostr relay or Install `relayer`
+- Connect to a public nostr relay or Install `relayer` and point both client & service provider to the relayer instance
 - You'll also need an [ImgBB](https://imgbb.com/) api secret key
 - `cp .env-example .env` in the `/env` folder. Populate it. NOTE: automatic1111 url should be pointing to the api server (7681 by default)
 - `go run .` to start the service provider
 - `cp .env-example .env` in the `/frontend` folder. Populate it
 - `cd frontend; npm run dev` to start the client
+
+Once the client is running, simply follow the instructions on the screen. Upload a product image, and provide a simple prompt. Next upload a logo image and provide a simple prompt. Click `Submit` and pay the invoice whenever there is a job offer (You'll need webLN. If not, go to browser console to find the bolt11). Once all the tasks are completed you should see the final Poster image.
 
 ## L402
 This project started with L402 and eventually moved towards NIP90. To test L402, get `aperture` running, and then test out the CLI client by running `cd client; go run .`
