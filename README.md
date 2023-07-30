@@ -49,6 +49,6 @@ Once the client is running, simply follow the instructions on the screen. Upload
 <img width="591" alt="Screenshot 2023-07-29 at 6 01 01 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/53795b55-709f-410e-924d-5b0ad0236cd2">
 
 ## L402
-This project started with L402 and eventually prioritizes NIP90. To test L402, get `aperture` running, and then test out the CLI client by running `cd client; go run .`
+This project started with L402 and eventually pivoted towards NIP90. To test L402, get `aperture` running, and then test out the CLI client by running `cd client; go run .`
 
 Video Demo [here](https://www.youtube.com/watch?v=TsCNUxBWcvg)
