@@ -2,9 +2,9 @@
 PhotoBolt converts a Product Image into a Poster.
 
 It uses
-1. `Generative AI`(Stable Diffusion) for image processing,
-2. `Decentralized Communication Protocol`(nostr) for task outsourcing,
-3. `Bitcoin Technology`(Lightning Network) for payment processing
+1. **Generative AI** *(Stable Diffusion)* for `image processing`,
+2. **Decentralized Communication Protocol** *(nostr)* for `task outsourcing`,
+3. **Bitcoin Technology** *(Lightning Network)* for `payment processing`
 
 <img width="1494" alt="Screenshot 2023-07-29 at 1 08 31 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/8b2a5966-d402-49d9-b95e-dd6550db98e0">
 .
