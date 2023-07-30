@@ -13,7 +13,7 @@ This repo contains both the `client`(vue) and `service provider`(go). Client bre
 
 Although each job request may depend on another job request as an input, they could still be processed independently by different service providers. You could test it out by running two PhotoBolt service provider instances when generating a poster. You should be able to tell which service provider took a task based on the avatar rendered under the `Tasks Pending` UI section.
 
-Video Demo [here]()
+Video Demo [here](https://youtu.be/xex9rEsrU5I)
 
 ## Summary of tech used
 - [automatic1111](https://github.com/AUTOMATIC1111/stable-diffusion-webui) Stable Diffusion server
@@ -45,11 +45,10 @@ Video Demo [here]()
 
 Once the client is running, simply follow the instructions on the screen. Upload a product image, and provide a simple prompt. Next upload a logo image and provide a simple prompt. Click `Submit` and pay the invoice whenever there is a job offer (You'll need webLN. If not, go to browser console to find the bolt11). Once all the tasks are completed you should see the final Poster image.
 
-## L402
-This project started with L402 and eventually moved towards NIP90. To test L402, get `aperture` running, and then test out the CLI client by running `cd client; go run .`
-
-Video Demo [here](https://www.youtube.com/watch?v=TsCNUxBWcvg)
-
-## PhotoBolt Job Chain
+## PhotoBolt Job Chain (rough illustration)
 <img width="591" alt="Screenshot 2023-07-29 at 6 01 01 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/53795b55-709f-410e-924d-5b0ad0236cd2">
 
+## L402
+This project started with L402 and eventually prioritizes NIP90. To test L402, get `aperture` running, and then test out the CLI client by running `cd client; go run .`
+
+Video Demo [here](https://www.youtube.com/watch?v=TsCNUxBWcvg)
