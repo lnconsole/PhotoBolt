@@ -6,7 +6,7 @@ It uses
 2. `Decentralized Communication Protocol`(nostr) for task outsourcing,
 3. `Bitcoin Technology`(Lightning Network) for payment processing
 
-<img width="1494" alt="Screenshot 2023-07-29 at 1 08 31 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/b5673eef-9526-44d9-a4c0-b51d8c223f31">
+<img width="1494" alt="Screenshot 2023-07-29 at 1 08 31 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/8b2a5966-d402-49d9-b95e-dd6550db98e0">
 .
   
 This repo contains both the `client`(vue) and `service provider`(go). Client breaks down the poster generation task into 5 smaller tasks, chain them together via [NIP90(Data Vending Machine)](https://github.com/nostr-protocol/nips/blob/vending-machine/90.md) and broadcast them to the nostr network. Service provider accepts each job requests by prompting for a payment, then process and return the job result back to the client.
@@ -51,4 +51,5 @@ This project started with L402 and eventually moved towards NIP90. To test L402,
 Video Demo [here](https://www.youtube.com/watch?v=TsCNUxBWcvg)
 
 ## PhotoBolt Job Chain
-<img width="591" alt="Screenshot 2023-07-29 at 6 01 01 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/78c19e04-bd4c-4b04-ae4c-15ef941891bd">
+<img width="591" alt="Screenshot 2023-07-29 at 6 01 01 PM" src="https://github.com/lnconsole/PhotoBolt/assets/43709958/53795b55-709f-410e-924d-5b0ad0236cd2">
+
